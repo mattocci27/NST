@@ -1,0 +1,53 @@
+
+```{r}
+library(tidyverse)
+library(NST)
+```
+
+
+```{r}
+
+data(tda)
+comm=tda$comm
+group=tda$group
+
+group$treatment %>% as.factor %>% summary
+
+tnst=tNST(comm=comm, group=group, rand=20,
+          output.rand=TRUE, nworker=1)
+# rand is usually set as 1000, here set rand=20 to save test time.
+
+nst.bt=nst.boot(nst.result=tnst, group=NULL, rand=99,
+                trace=TRUE, two.tail=FALSE, out.detail=FALSE,
+                between.group=FALSE, nworker=1)
+
+source("R/nst.boot.r")
+nst.bt2 <- nst.boot2(nst.result=tnst, group=NULL, rand=99,
+                trace=TRUE, two.tail=FALSE, out.detail=FALSE,
+                between.group=FALSE, nworker=1, use.min=FALSE)
+
+nst.bt1 <- nst.boot2(nst.result=tnst, group=NULL, rand=99,
+                trace=TRUE, two.tail=FALSE, out.detail=FALSE,
+                between.group=FALSE, nworker=1, use.min=TRUE)
+
+```
+
+
+```{r}
+
+nst.result <-tnst
+
+min_samp_n <- min(table(tnst$details$grou))
+
+group <- NULL
+rand <- 9
+trace=TRUE
+two.tail=FALSE
+out.detail=FALSE
+between.group=FALSE
+nworker=1
+
+i <- 1
+ik <- ik1[[2]]
+
+```
