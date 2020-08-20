@@ -1,5 +1,5 @@
 nst.boot<-function(nst.result,group=NULL,rand=999,trace=TRUE,
-                   two.tail=FALSE,out.detail=FALSE,between.group=FALSE,
+                   two.tail=FALSE,out.detail=FALSE,between.group=FALSE,use.min=FALSE,
                    nworker=1)
 {
   if(is.null(nst.result$details)){stop("Bootstrapping need detailed output of NST.")}
@@ -27,7 +27,8 @@ nst.boot<-function(nst.result,group=NULL,rand=999,trace=TRUE,
     ik2=lapply(1:ncol(cbn),function(i){c(cbn[1,i],cbn[2,i])})
   }
   
-  
+  min_samp_n <- min(table(group))
+
   nbt<-function(ik, group, grp.lev, obs3, dist.ran, Dmax, rand, trace, between.group)
   {
     # functions
@@ -100,6 +101,23 @@ nst.boot<-function(nst.result,group=NULL,rand=999,trace=TRUE,
     stnsti=stnst(obs3b = obs3[idi,,drop=FALSE],dist.ranb = dist.ran[idi,,drop=FALSE],Dmax=Dmax)
     if(i==k)
     {
+      if (use.min) {
+      stnstij=t(sapply(1:rand,
+                       function(j)
+                       {
+                         sampij=sample(sampi,size = min_samp_n,replace = TRUE)
+                         idij=id.2col(sampij,obs3[,1:2,drop=FALSE])
+                         t=1
+                         while((length(idij)<1)&(t<100))
+                         {
+                           sampij=sample(sampi,size = length(sampi),replace = TRUE)
+                           idij=id.2col(sampij,obs3[,1:2,drop=FALSE])
+                           t=t+1
+                         }
+                         stnst(obs3b = obs3[idij,,drop=FALSE],dist.ranb = dist.ran[idij,,drop=FALSE],Dmax=Dmax)
+                       }))
+
+      } else {
       stnstij=t(sapply(1:rand,
                        function(j)
                        {
@@ -114,7 +132,18 @@ nst.boot<-function(nst.result,group=NULL,rand=999,trace=TRUE,
                          }
                          stnst(obs3b = obs3[idij,,drop=FALSE],dist.ranb = dist.ran[idij,,drop=FALSE],Dmax=Dmax)
                        }))
+      }
     }else{
+      if (use.min) {
+      stnstij=t(sapply(1:rand,
+                       function(j)
+                       {
+                         sampij=sample(sampi,size = min_samp_n,replace = TRUE)
+                         sampkj=sample(sampk,size = min_samp_n,replace = TRUE)
+                         idikj=id.2colb(sampij,sampkj,obs3[,1:2,drop=FALSE])
+                         stnst(obs3b = obs3[idikj,,drop=FALSE],dist.ranb = dist.ran[idikj,,drop=FALSE],Dmax=Dmax)
+                       }))
+      } else {
       stnstij=t(sapply(1:rand,
                        function(j)
                        {
@@ -123,6 +152,7 @@ nst.boot<-function(nst.result,group=NULL,rand=999,trace=TRUE,
                          idikj=id.2colb(sampij,sampkj,obs3[,1:2,drop=FALSE])
                          stnst(obs3b = obs3[idikj,,drop=FALSE],dist.ranb = dist.ran[idikj,,drop=FALSE],Dmax=Dmax)
                        }))
+      }
     }
     stnstij=rbind(stnsti,stnstij)
     STqtij=stats::quantile(stnstij[,1])

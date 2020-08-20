@@ -1,7 +1,7 @@
 Package: NST
 Type: Package
 Title: Normalized Stochasticity Ratio
-Version: 2.0.4
+Version: 2.0.4.9000
 Date: 2019-10-08
 Author: Daliang Ning
 Maintainer: Daliang Ning <ningdaliang@ou.edu>
