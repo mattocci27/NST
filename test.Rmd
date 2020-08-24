@@ -7,6 +7,12 @@ library(NST)
 
 ```{r}
 
+rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "warning", check_dir = "check")
+
+n.min <- NULL
+is.null(n.min)
+if (is.null(n.min)) print("moge")
+
 data(tda)
 comm=tda$comm
 group=tda$group
@@ -49,5 +55,128 @@ nworker=1
 
 i <- 1
 ik <- ik1[[2]]
+
+library(EcoSimR)
+
+## Importing data
+yan.d1<-read.csv("YANDATA1.csv",header = T,row.names = 1)
+
+summary(yan.d1)
+names(yan.d1)
+class(yan.d1)
+
+## Extracting community data (need tydyverse package)
+sp.names <- yan.d1 %>%
+  dplyr::select(Clad:mollis) #use  :: to specify "select" function from dplyr package
+(sp_names <- names(sp.names)) #extra outside brackets tells R to display the results
+
+yan.d1.c<-yan.d1[,sp_names]
+names(yan.d1.c)
+
+## Group data for tNST
+yan.d1.g<-dplyr::select(yan.d1,Goup)
+class(yan.d1.g)
+
+yan.d1.gc<-cbind(yan.d1.g, yan.d1.c) ## this is the data to be fed into the custom function
+
+#com.data.s<-split(yan.d1.c, yan.d1.g)
+#name.no<-length(unique(yan.d1.g[,1]))
+#my.m<-list()
+#com.data.s[[1]]
+
+data=yan.d1.gc
+sample.size=12
+null.no=10
+dat.tran="log"
+dist.method="bray"
+rand=100
+
+NST.func<-function(data, sample.size, null.no=10,dat.tran="log",
+                   dist.method="bray",rand=100){
+  com.data.s <- split(data, data[, 1])
+  name.no<-length(unique(data[,1]))
+  my.m<-list()
+  my.mb<-list()
+  com.data.tot<-data.frame()
+  out <- numeric(null.no)
+  for(j in 1:null.no){
+    for(i in 1:name.no){
+      com.data.s2 <- com.data.s[[i]][sample(nrow(com.data.s[[i]]),sample.size, replace=T),]
+      com.data.tot<-rbind(com.data.tot, com.data.s2)
+    }
+    com.data.c<-com.data.tot[,-1]
+    com.data.c<-t(com.data.c) #some cooccurrence packages require species x sample matrix/data.frame
+    com.data.g<-com.data.tot[,1]
+      my.m[[j]]<-cooc_null_model(speciesData = com.data.c, algo="sim9",nReps = 1000)
+      out[j] <- (my.m[[j]]$Obs - mean(my.m[[j]]$Sim))/sd(my.m[[j]]$Sim)
+                           }
+    out
+}
+
+#undebug(NST.func)
+NST.func(data=yan.d1.gc, sample.size=12, null.no=3,dat.tran="log",
+                   dist.method="bray",rand=100)
+
+
+```
+
+```{r}
+library(vegan)
+library(EcoSimR)
+yan.d1<-read.csv("YANDATA1.csv",header = T,row.names = 1)
+summary(yan.d1)
+names(yan.d1)
+class(yan.d1)
+
+c("a", "b", "f", "c", "f", "a") %>% unique
+
+#yan.d1.gc[,1]
+
+## Extracting community data (need tydyverse package)
+sp.names <- yan.d1 %>%
+  dplyr::select(Clad:mollis) #use  :: to specify "select" function from dplyr package
+(sp_names <- names(sp.names)) #extra outside brackets tells R to display the results
+
+yan.d1.c<-yan.d1[,sp_names]
+names(yan.d1.c)
+yan.d1.c<-decostand(yan.d1.c, "pa")
+
+## Group data for tNST
+yan.d1.g<-dplyr::select(yan.d1,Goup)
+class(yan.d1.g)
+
+yan.d1.gc<-cbind(yan.d1.g, yan.d1.c) ## this is the data to be fed into the custom function
+
+#debug(cooc_null.func)
+cooc_null.func<-function(data, sample.size, null.no, algo="sim9", nReps = 1000, replace=F){
+  com.data.s <- split(data, data[, 1])
+  name.no<-length(unique(data[, 1]))
+    my.m<-list()
+  my.mb<-list()
+  com.data.s2<-data.frame()
+  out1 <- numeric(name.no)
+  out <- NULL
+
+  for(j in 1:null.no){
+    for(i in 1:name.no){
+      com.data.s2 <- com.data.s[[i]][sample(nrow(com.data.s[[i]]), sample.size, replace=replace),]
+      com.data.s2 <- com.data.s2[,-1]
+      com.data.s2 <- t(com.data.s2)
+      my.m[[i]]<-cooc_null_model(speciesData = com.data.s2, algo = algo, nReps =
+                                   nReps,suppressProg = F)
+      out1[i] <- (my.m[[i]]$Obs - mean(my.m[[i]]$Sim))/sd(my.m[[i]]$Sim)
+    }
+    #out1[j]
+    #message(j)
+    #result1$out[j] <-out1[j]
+    print(unique(data[, 1]))
+    out <- rbind(out, out1)
+
+  }
+  colnames(out) <- names(com.data.s)
+  out
+}
+
+cooc_null.func(data=yan.d1.gc, sample.size=12, null.no=3, algo="sim9", nReps = 1000)
 
 ```

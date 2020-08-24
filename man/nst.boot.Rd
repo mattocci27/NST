@@ -9,7 +9,7 @@ To test the distribution of ST and NST in each group, and the significance of ST
 \usage{
 nst.boot(nst.result, group=NULL, rand=999, trace=TRUE,
          two.tail=FALSE, out.detail=FALSE, between.group=FALSE,
-         use.min=FALSE,
+         n.min=NULL,
          nworker=1)
 }
 \arguments{
@@ -20,7 +20,7 @@ nst.boot(nst.result, group=NULL, rand=999, trace=TRUE,
   \item{two.tail}{logic, the p value is two-tail or one-tail.}
   \item{out.detail}{logic, whether to output details rather than just summarized results.}
   \item{between.group}{Logic, whether to calculate for between-group turnovers. default is FALSE.}
-  \item{use.min}{Logic, whether to fix resampling nubmers for the minimum group. default is FALSE.}
+  \item{n.min}{integer, the minmum nuber of sample size for bootstrapping. default is NULL}
   \item{nworker}{for parallel computing. Either a character vector of host names on which to run the worker copies of R, or a positive integer (in which case that number of copies is run on localhost). default is 1, means not to use parallel computing.}
 }
 \details{

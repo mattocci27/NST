@@ -1,5 +1,5 @@
 nst.boot<-function(nst.result,group=NULL,rand=999,trace=TRUE,
-                   two.tail=FALSE,out.detail=FALSE,between.group=FALSE,use.min=FALSE,
+                   two.tail=FALSE,out.detail=FALSE,between.group=FALSE,n.min=NULL,
                    nworker=1)
 {
   if(is.null(nst.result$details)){stop("Bootstrapping need detailed output of NST.")}
@@ -26,8 +26,8 @@ nst.boot<-function(nst.result,group=NULL,rand=999,trace=TRUE,
     cbn=utils::combn(length(grp.lev),2)
     ik2=lapply(1:ncol(cbn),function(i){c(cbn[1,i],cbn[2,i])})
   }
-  
-  min_samp_n <- min(table(group))
+ 
+  if (!is.null(n.min)) min_samp_n <- n.min
 
   nbt<-function(ik, group, grp.lev, obs3, dist.ran, Dmax, rand, trace, between.group)
   {
@@ -101,7 +101,7 @@ nst.boot<-function(nst.result,group=NULL,rand=999,trace=TRUE,
     stnsti=stnst(obs3b = obs3[idi,,drop=FALSE],dist.ranb = dist.ran[idi,,drop=FALSE],Dmax=Dmax)
     if(i==k)
     {
-      if (use.min) {
+      if (!is.null(n.min)) {
       stnstij=t(sapply(1:rand,
                        function(j)
                        {
@@ -134,7 +134,7 @@ nst.boot<-function(nst.result,group=NULL,rand=999,trace=TRUE,
                        }))
       }
     }else{
-      if (use.min) {
+      if (!is.null(n.min)) {
       stnstij=t(sapply(1:rand,
                        function(j)
                        {

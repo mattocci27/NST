@@ -25,12 +25,12 @@ nst.bt=nst.boot(nst.result=tnst, group=NULL, rand=99,
 ```
 
 
-- Apply the minimum sample size for resampling for each group.
+- Apply the minimum sample size (`n.min`) for resampling for each group.
 
 ```
 nst.bt2=nst.boot(nst.result=tnst, group=NULL, rand=99,
                 trace=TRUE, two.tail=FALSE, out.detail=FALSE,
                 between.group=FALSE, 
-                use.min = TRUE,
+                n.min = 12,
                 nworker=1)
 ```
